@@ -19,6 +19,24 @@ Brianna Ren\\
 \maketitle
 
 \begin{abstract}
+  The Android platform exhibits a service oriented architecture where
+  apps can interact with each other through message passing.  These
+  messages --- called intents --- use late binding to allow any number
+  of apps to handle them, based on a filter which is used to decide
+  which app will respond to the intent.  This gives rise to a
+  programming style based on late binding.  We formalize these
+  intents, and write down types for each intent, adding higher order
+  intents, and a programming style based on Continuation Passing Style
+  (CPS).  We also add inter device intents, allowing multiple devices
+  to communicate and accomplish a task, even if the tools to
+  accomplish the task do not exist (together) on any single device.
+  We have a working implementation based on a combination of an
+  Android library and a Rails web service (which does intent routing
+  for us).  To demonstrate our system --- and as a case study in
+  higher order distributed programming --- we design a system that
+  allows distributed news collection, where a user can create
+  elaborate context based tags on information, and ask that it be
+  collected by a number of devices within a region.
 \end{abstract}
 
 \section{Introduction}
