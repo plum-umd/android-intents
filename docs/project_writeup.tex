@@ -1,0 +1,67 @@
+\documentclass{acm_proc_article-sp}
+
+\begin{document}
+
+\title{Higher Order and Distributed Intents for the Android platform.}
+
+\author{
+\alignauthor
+Kristopher Micinski\\
+       \email{micinski@cs.umd.edu}
+\alignauthor
+Brianna Ren 
+       \email{bren@cs.umd.edu}
+}
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+\section{Introduction}
+Android applications exhibit a novel programming model: a service
+oriented architecture with message passing between applications to
+allow cooperation.  As an example, we might have an application which
+allows a user to take a picture, manipulate it with a photo editor (to
+remove red eye, for example), and then send it to their friends via
+email.  The messages sent between applications are called Intents, and
+form the basis for service oriented communication.  In this paper we
+present:
+
+\begin{itemize}
+\item A formalization of intents, and the Android activity stack.
+  This allows precise reasoning about how intents will be handled and
+  allows an interpretation of exactly what in intent \emph{is}.
+\item A dynamic semantics for an intent languge.
+\item From this, a \emph{type} for intents, which allows applications
+  to say exactly what type of data they will consume 
+\end{itemize}
+
+We first investigate an operational semantics for a scripting language
+which allows scripting Android apps out of services provided by each
+app.  For example, the camera app will allow a user to take a picture,
+and return the bitmap containing that image.  A file chooser app might
+allow a user to choose a file and then return the name of the file
+that was choosen.  However, we present a small scripting langauge (in
+the style of Scheme) that allows users to write scripted programs
+which combine this behavior.  While each of the examples given up to
+this point was first order (an atomic ``action'' was performed), we
+then add the possibility of higher order functions: this allows
+programming in a CPS style.  For example, we might write the following
+script which allowed the user to execute the following script:
+
+\begin{verbatim}
+(send-email (choose-file
+\end{verbatim}
+
+\section{Higher Order Intents}
+
+\section{Operational Semantics}
+
+\section{Inter-Device Intents}
+
+\section{Case Study: Distributed News Collection}
+
+\section{Conclusion}
+
+\end{document}
