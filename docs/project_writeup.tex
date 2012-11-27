@@ -77,7 +77,27 @@ script which allowed the user to execute the following script:
 
 \section{Higher Order Intents}
 
+\section{Android Scheme}
+
+In this section we present Android scheme, a small language which we
+have invented to enable scripting with (and demonstrate the power of)
+android intents.  A user (who wants to write Android apps, out of
+existing Android components) will write their app using Android
+scheme, and then pass those programs to the Android scheme
+interpreter, running on a device (this is a standard app, with some
+boilerplate code).
+
+Each intent is handled \emph{within} its handling app, and only the
+result of the computation leaves the intent, but this is no problem:
+we can simply write programs in Android scheme, and then have the
+indivual intents call back to the interpreter when they finish, using
+a continuation based style.  Android already encourages this
+programming style, as when intents finish the can start new intents by
+simply passing them to the system.
+
 \section{Operational Semantics}
+
+We base our
 
 \section{Inter-Device Intents}
 
