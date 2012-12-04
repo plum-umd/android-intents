@@ -1,0 +1,40 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Requester device ident:</b>
+  <%= @request.requester_device_ident %>
+</p>
+
+<p>
+  <b>Intent program:</b>
+  <%= @request.intent_program %>
+</p>
+
+<p>
+  <b>Output:</b>
+  <%= @request.output %>
+</p>
+
+<p>
+  <b>Error:</b>
+  <%= @request.error %>
+</p>
+
+<p>
+  <b>Status:</b>
+  <%= @request.status %>
+</p>
+
+<p>
+  <b>Num phones:</b>
+  <%= @request.num_phones %>
+</p>
+
+<p>
+  <b>Num errors:</b>
+  <%= @request.num_errors %>
+</p>
+
+
+<%= link_to 'Edit', edit_request_path(@request) %> |
+<%= link_to 'Back', requests_path %>

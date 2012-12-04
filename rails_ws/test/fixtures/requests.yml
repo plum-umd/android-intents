@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  requester_device_ident: MyString
+  intent_program: MyString
+  output: MyString
+  error: MyString
+  status: MyString
+  num_phones: 1
+  num_errors: 1
+
+two:
+  requester_device_ident: MyString
+  intent_program: MyString
+  output: MyString
+  error: MyString
+  status: MyString
+  num_phones: 1
+  num_errors: 1

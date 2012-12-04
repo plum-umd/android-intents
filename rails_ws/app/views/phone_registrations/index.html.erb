@@ -1,0 +1,25 @@
+<h1>Listing phone_registrations</h1>
+
+<table>
+  <tr>
+    <th>Device ident</th>
+    <th>Registration ident</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @phone_registrations.each do |phone_registration| %>
+  <tr>
+    <td><%= phone_registration.device_ident %></td>
+    <td><%= phone_registration.registration_ident %></td>
+    <td><%= link_to 'Show', phone_registration %></td>
+    <td><%= link_to 'Edit', edit_phone_registration_path(phone_registration) %></td>
+    <td><%= link_to 'Destroy', phone_registration, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Phone registration', new_phone_registration_path %>

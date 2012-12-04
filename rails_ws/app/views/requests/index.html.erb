@@ -1,0 +1,35 @@
+<h1>Listing requests</h1>
+
+<table>
+  <tr>
+    <th>Requester device ident</th>
+    <th>Intent program</th>
+    <th>Output</th>
+    <th>Error</th>
+    <th>Status</th>
+    <th>Num phones</th>
+    <th>Num errors</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @requests.each do |request| %>
+  <tr>
+    <td><%= request.requester_device_ident %></td>
+    <td><%= request.intent_program %></td>
+    <td><%= request.output %></td>
+    <td><%= request.error %></td>
+    <td><%= request.status %></td>
+    <td><%= request.num_phones %></td>
+    <td><%= request.num_errors %></td>
+    <td><%= link_to 'Show', request %></td>
+    <td><%= link_to 'Edit', edit_request_path(request) %></td>
+    <td><%= link_to 'Destroy', request, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Request', new_request_path %>

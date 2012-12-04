@@ -1,0 +1,45 @@
+<%= form_for(@request) do |f| %>
+  <% if @request.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@request.errors.count, "error") %> prohibited this request from being saved:</h2>
+
+      <ul>
+      <% @request.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :requester_device_ident %><br />
+    <%= f.text_field :requester_device_ident %>
+  </div>
+  <div class="field">
+    <%= f.label :intent_program %><br />
+    <%= f.text_field :intent_program %>
+  </div>
+  <div class="field">
+    <%= f.label :output %><br />
+    <%= f.text_field :output %>
+  </div>
+  <div class="field">
+    <%= f.label :error %><br />
+    <%= f.text_field :error %>
+  </div>
+  <div class="field">
+    <%= f.label :status %><br />
+    <%= f.text_field :status %>
+  </div>
+  <div class="field">
+    <%= f.label :num_phones %><br />
+    <%= f.number_field :num_phones %>
+  </div>
+  <div class="field">
+    <%= f.label :num_errors %><br />
+    <%= f.number_field :num_errors %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

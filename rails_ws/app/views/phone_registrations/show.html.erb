@@ -1,0 +1,15 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Device ident:</b>
+  <%= @phone_registration.device_ident %>
+</p>
+
+<p>
+  <b>Registration ident:</b>
+  <%= @phone_registration.registration_ident %>
+</p>
+
+
+<%= link_to 'Edit', edit_phone_registration_path(@phone_registration) %> |
+<%= link_to 'Back', phone_registrations_path %>
