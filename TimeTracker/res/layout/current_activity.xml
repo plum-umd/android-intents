@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:tools="http://schemas.android.com/tools"
+		android:id="@+id/RelativeLayout1"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical" >
+
+  <!-- The part of the new activity which displays the current
+       activity -->
+  <TableLayout
+      android:id="@+id/current_activity_display"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentLeft="true"
+      android:layout_alignParentRight="true" >
+    <TableRow
+	android:gravity="center">
+      <TextView
+	  android:id="@+id/current_activity_name"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_alignParentLeft="true"
+	  android:layout_alignParentTop="true"
+	  android:text="Current activity"
+	  android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
+    <TableRow>
+      <LinearLayout
+	  android:id="@+id/linearLayout1"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_alignParentBottom="true"
+	  android:layout_centerHorizontal="true" 
+	  android:orientation="horizontal">
+	<TextView
+	    android:id="@+id/current_activity_tag_list"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentLeft="true"
+	    android:layout_alignParentTop="true"
+	    android:text="@string/tags_desc"
+	    android:textAppearance="?android:attr/textAppearanceMedium" />
+	<!-- The set of tags gets placed here! -->
+	<LinearLayout
+	    android:id="@+id/tag_set"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentBottom="true"
+	    android:layout_centerHorizontal="true" 
+	    android:orientation="horizontal"/>
+      </LinearLayout>
+    </TableRow>
+    <TableRow>
+      <TextView
+	  android:id="@+id/current_activity_duration"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_alignParentLeft="true"
+	  android:layout_alignParentTop="true"
+	  android:text="Activity duration"
+	  android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
+  </TableLayout>
+  
+  <!-- Allowing new activity to be inserted -->
+  <TableLayout
+      android:id="@+id/new_activity"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_above="@+id/linearLayout1"
+      android:layout_alignParentLeft="true"
+      android:layout_alignParentRight="true" >
+    <TableRow
+	android:id="@+id/tableRow1"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+      <TextView
+	  android:id="@+id/TextView02"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/activity_desc"
+	  android:textAppearance="?android:attr/textAppearanceMedium" />
+      <EditText
+	  android:id="@+id/activity_input"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_weight="1"
+	  android:ems="10" />
+    </TableRow>
+    <TableRow
+	android:id="@+id/tableRow2"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+      <TextView
+	  android:id="@+id/TextView03"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/tags_desc"
+	  android:textAppearance="?android:attr/textAppearanceMedium" />
+      <EditText
+	  android:id="@+id/tags_input"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_weight="1"
+	  android:ems="10" />
+    </TableRow>
+  </TableLayout>
+  
+  <!-- The bar allowing switching of the current activitites. -->
+  
+  <LinearLayout
+      android:id="@+id/linearLayout1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:layout_centerHorizontal="true" >
+
+    <Button
+	android:id="@+id/Button02"
+	android:layout_width="142dp"
+	android:layout_height="wrap_content"
+	android:longClickable="false"
+	android:text="@string/switch_activity_button" />
+
+    <Button
+	android:id="@+id/Button01"
+	android:layout_width="184dp"
+	android:layout_height="wrap_content"
+	android:longClickable="false"
+	android:text="@string/stop_tracking" />
+  </LinearLayout>
+  
+</RelativeLayout>
