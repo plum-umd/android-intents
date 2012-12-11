@@ -117,14 +117,14 @@
       android:layout_centerHorizontal="true" >
 
     <Button
-	android:id="@+id/Button02"
+	android:id="@+id/switch_activity_button"
 	android:layout_width="142dp"
 	android:layout_height="wrap_content"
 	android:longClickable="false"
 	android:text="@string/switch_activity_button" />
 
     <Button
-	android:id="@+id/Button01"
+	android:id="@+id/stop_activity_button"
 	android:layout_width="184dp"
 	android:layout_height="wrap_content"
 	android:longClickable="false"

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TimeTracker</string>
+    <string name="current_item_activity">Current Activity</string>
     <string name="title_section3">Section 3</string>
     <string name="title_section2">Section 2</string>
     <string name="title_section1">Section 1</string>
@@ -11,4 +12,17 @@
     <string name="activity_desc">Activity:</string>
     <string name="stop_tracking">Stop Tracking</string>
     <string name="switch_activity_button">Switch!</string>  
+    <string name="items_activity">Items</string>
+    <string name="backup">Backup</string>
+    <string name="backup_format">Format</string>
+    <string name="backup_activity">Backup</string>
+    <string name="backup_text">Clicking the button will backup your
+    tracked time entries.  These will be sent to your specified email
+    address in the specified format.  This may serve useful for
+    performing post analysis on your data.
+    </string>
+    <string-array name="backupFormats">
+      <item>CSV</item>
+      <item>JSON</item>
+    </string-array>
 </resources>

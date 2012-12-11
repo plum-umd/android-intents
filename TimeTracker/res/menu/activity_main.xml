@@ -4,4 +4,9 @@
         android:orderInCategory="100"
         android:showAsAction="ifRoom|withText"        
         android:title="@string/switch_activity" android:visible="true"/>
+    <item
+        android:id="@+id/items_activity"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom|withText"        
+        android:title="@string/items_activity" android:visible="true"/>
 </menu>

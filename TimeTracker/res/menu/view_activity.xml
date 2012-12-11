@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/prefs"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom|withText"
+	android:icon="@android:drawable/ic_menu_preferences"
+        android:title="@string/items_activity" android:visible="true"/>
+    <item
+        android:id="@+id/items_activity"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom|withText"  
+	android:icon="@android:drawable/ic_menu_agenda"
+        android:title="@string/items_activity" android:visible="true"/>
+</menu>
