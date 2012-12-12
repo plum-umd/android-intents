@@ -160,7 +160,7 @@ Figure~\ref{fig:qr-scanning-intent} shows the implementation of this
 kind of intent: note that in this example there is an explicit naming
 of which package should receive the intent.  (This example was taken
 from a Google Android developers blog post exhibiting the use of
-intents \ref{android:intentblog}.)
+intents \cite{android:intentblog}.)
 
 \begin{figure}
   \caption{QR Scannig Intent}
@@ -195,8 +195,6 @@ the intent that we construct for our email in our case study
 (Section~\ref{section:case-study}).
 
 \begin{figure}
-  \caption{Share Intent}
-  \label{fig:share-intent}
   \begin{lstlisting}
 // Construct the skeleton of the intent
 Intent intent=
@@ -216,6 +214,8 @@ intent.putExtra(Intent.EXTRA_TEXT,
 // start a new UI to send the message
 startActivityForResult(intent);
 \end{lstlisting}
+\caption{Share Intent}
+\label{fig:share-intent}
 \end{figure}
 
 %\section{Higher Order Intents}
@@ -297,7 +297,7 @@ convention.
 \paragraph*{Modeling the Android system intent}\label{section:intents-model}
 All intents seen in the Android system match our formalism, we
 investigted the implementation of the Android \texttt{PackageManager}
-\ref{android:package-manager}.  We also found that intents are matched
+\cite{android:package-manager}.  We also found that intents are matched
 only up to certain number of parameters, in particular only a few
 fields are considered in some situations (in the case of a
 \texttt{PendingIntent}.  We can handle all of the standard Android
@@ -305,13 +305,13 @@ intents (included in the standard apps that come preinstalled on the
 device) using the formalism given in this section.
 
 \begin{figure}[t]
-  \label{fig:multiple-intents}
   \centering
     \includegraphics[width=.3\textwidth]{sharing}
     \caption{When the system cannot fully resolve an intent, it is
       possible that there will be more than one process which can
       handle the intent.  In our model we view this as a nonempty
       handler set.}
+  \label{fig:multiple-intents}
 \end{figure}
 
 \section{Inter-Device Intents}
@@ -818,7 +818,7 @@ interface: any program capable of solving the constraints can answer
 them.  We do not anticipate a solution to this problem at the current
 time, but have to look at a more restrictive framework.  In
 particular, a very common example is that of mobile code.  Myers
-\ref{myers:oakland2012} developed a framework which handled security
+\cite{myers:oakland2012} developed a framework which handled security
 flow in mobile code, a model which we feel may apply here.  In the
 case where our constraints talk about a package name, we can apply
 their framework verbatim to deduce information flow facts
@@ -848,14 +848,14 @@ many algorithms which can help us with this, mostly inspired from the
 field of mobile routing.  We plan to consider approaches based on
 models from ad hoc routing protocols, possibly using epidemic routing
 protocols.  Because devices may be disconnected and move in a wide
-area, we consider that protocols such as PRoPHET \ref{prophet:2003}
+area, we consider that protocols such as PRoPHET \cite{prophet:2003}
 may be useful in designing delay tolerant networks which exchange
 intents and route them to handlers based on who has processing power.
 This is particularly exciting because it introduces a new set of
 constraints (based on our intent model) that dictates the routing
 protocol.  Our system bears resemblance to those studied in the
 literature, in particular to other message passing systems for delay
-tolerant networks, such as \ref{message-passing-dtn}.
+tolerant networks, such as \cite{message-passing-dtn}.
 
 \paragraph{Error handling and timeouts} 
 
@@ -869,7 +869,7 @@ package manager may have to load information).  In our model, we
 cannot know that an intent cannot be satisfied unless all devices in
 the network report back failure to handle the intent.  In this case,
 we simply flag an error in the returning callback (for example, in
-Figure~\ref{fig:mobile-intents-email-example}) and handle it similarly
+Figure~\cite{fig:mobile-intents-email-example}) and handle it similarly
 to how an intent would be handled in the existing Android platform.
 
 We are also incorporating timeouts.  This is a very simple extension
