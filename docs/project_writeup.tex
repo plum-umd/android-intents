@@ -1,5 +1,6 @@
 \documentclass{acm_proc_article-sp}
 
+\usepackage{graphicx}
 \usepackage{bussproofs}
 \usepackage{amssymb}
 \usepackage{amssymb}
@@ -8,7 +9,6 @@
 \usepackage{caption}
 
 \lstset{numbers=left, numberstyle=\small, numbersep=8pt, frame = single, language=Java, framexleftmargin=15pt}
-
 
 \DeclareCaptionFont{white}{\color{white}}
 \DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\textwidth}{#1#2#3}}}
@@ -35,18 +35,15 @@ Brianna Ren\\
   of apps to handle them, based on a filter which is used to decide
   which app will respond to the intent.  This gives rise to a
   programming style based on late binding.  We formalize these
-  intents, and write down types for each intent, adding higher order
-  intents, and a programming style based on Continuation Passing Style
-  (CPS).  We also add inter device intents, allowing multiple devices
+  intents, and present inter device intents, allowing multiple devices
   to communicate and accomplish a task, even if the tools to
   accomplish the task do not exist (together) on any single device.
   We have a working implementation based on a combination of an
   Android library and a Rails web service (which does intent routing
   for us).  To demonstrate our system --- and as a case study in
-  higher order distributed programming --- we design a system that
-  allows distributed news collection, where a user can create
-  elaborate context based tags on information, and ask that it be
-  collected by a number of devices within a region.
+  distributed programming and collective computation --- we design a
+  sample app which showcases the use of our library and associated web
+  service.
 \end{abstract}
 
 \section{Introduction}
@@ -56,34 +53,35 @@ allow cooperation.  As an example, we might have an application which
 allows a user to take a picture, manipulate it with a photo editor (to
 remove red eye, for example), and then send it to their friends via
 email.  The messages sent between applications are called Intents, and
-form the basis for service oriented communication.  In this paper we
-present:
+form the basis for service oriented communication.  This is a great
+vision: it allows apps to be written extremely concisely and with
+minimal code.
+
+Our goal is to make Android programs act like modules of a program:
+exporting an interface with which other programs can interact.  Each
+app has specialized functionality, for example, an email app may store
+certain preferences about the user (their main email address).  But it
+is helpful for these apps to interact (such as using the preferred
+email app to back up information), because the user will be used to
+their preferred email application to back up their contacts (for
+example).
+
+In this paper we present:
 
 \begin{itemize}
 \item A formalization of intents, and the Android activity stack.
   This allows precise reasoning about how intents will be handled and
   allows an interpretation of exactly what in intent \emph{is}.
-\item A dynamic semantics for an intent languge.
-\item From this, a \emph{type} for intents, which allows applications
-  to say exactly what type of data they will consume 
+
+\item A proposal for distributed programming with intents, where the
+  intent names a set of constraints (in accordance with our formalism)
+  used for finding which applications can handle those intents.
+
+\item A sample implementation of both a library for manipulating and
+  programming with intents, and example application using our approach
+  and showing its correctness.
+
 \end{itemize}
-
-We first investigate an operational semantics for a scripting language
-which allows scripting Android apps out of services provided by each
-app.  For example, the camera app will allow a user to take a picture,
-and return the bitmap containing that image.  A file chooser app might
-allow a user to choose a file and then return the name of the file
-that was choosen.  However, we present a small scripting langauge (in
-the style of Scheme) that allows users to write scripted programs
-which combine this behavior.  While each of the examples given up to
-this point was first order (an atomic ``action'' was performed), we
-then add the possibility of higher order functions: this allows
-programming in a CPS style.  For example, we might write the following
-script which allowed the user to execute the following script:
-
-\begin{verbatim}
-(send-email (choose-file
-\end{verbatim}
 
 \section{Intents in Android}
 \label{sec:intent-overview}
@@ -130,7 +128,7 @@ intent, we mean that which starts a persistent action, such a long
 running service to send weather information to the user.  Again,
 picking a contact would be an atomic operation.
 
-\section{Current Intent System}
+\subsection{Current Intent System}
 
 Applications currently use intents to send lightweight messages to
 other processes, for sharing data, starting services, and querying the
@@ -214,14 +212,9 @@ startActivityForResult(intent);
 \end{lstlisting}
 \end{figure}
 
-%%\section{Higher Order Intents}
-
-\section{Model of Intents}
-
-
-
+%\section{Higher Order Intents}
+% \section{Model of Intents}
 % \section{Android Scheme}
-
 % In this section we present Android scheme, a small language which we
 % have invented to enable scripting with (and demonstrate the power of)
 % android intents.  A user (who wants to write Android apps, out of
@@ -229,7 +222,6 @@ startActivityForResult(intent);
 % scheme, and then pass those programs to the Android scheme
 % interpreter, running on a device (this is a standard app, with some
 % boilerplate code).
-
 % Each intent is handled \emph{within} its handling app, and only the
 % result of the computation leaves the intent, but this is no problem:
 % we can simply write programs in Android scheme, and then have the
@@ -238,10 +230,79 @@ startActivityForResult(intent);
 % programming style, as when intents finish the can start new intents by
 % simply passing them to the system.
 
-
 \section{Formalization of Intents}
 
-The Android system resolves intents sent to other devices
+The Android system resolves intents sent to other processes by using
+map defined in the system.  When an application is installed, it also
+carries a manifest file specifying all of the components of the
+application, along with various other metadata (for security, icons,
+etc...).  Upon installation, the system package manager registers an
+app.  When an intent is used (or queried) the package manager simply
+uses this mapping to find which components can handle the intent.  Our
+formalism of intents seeks to capture this notion.
+
+To model intents, we use a set of constraints.  Each intent handler in
+the Android platform handles one of these constraints by providing a
+guarantee that the intent can be handled.  We do not concentrate too
+particularly on a specific formalism from logic, because the intent
+system can be encoded in any first order logic.  Particularly we
+consider an intent $\mathcal{I}$ as a tuple, along with a formula
+$\mathcal{I}_\phi$.  We assume that $\phi$ specifies certain relations
+used to \emph{match} the intent with a handler: any handler which
+solves (logically) the intent can execute code based on the arguments
+in $\mathcal{I}$.  (In our implementation we use equality over
+predicates with variadic string arguments, though other formulations
+are possible.)  For our purposes, we consider that constraint is a
+conjunction of literals, each consisting of predicates over
+universally quantified variables.  We could imagine a more complex
+system for specifying intents, for example using first order logic.
+We choose with a subset of first order logic because we did not find
+any real examples in the Android framework (that were not fabricated
+by us) that necessitated their incorporation: doing so simply made the
+system more complicated.
+
+An intent handler registers to receive intents by specifying which
+intents they can reliably handle.  We view as an intent handler as a
+function $f$, which accepts an intent $\mathcal{I}$ as input, along
+with a provided matching formula: $\phi$.  We consider the system to
+have a large set of intents, $\Gamma$.  To decide whether an intent
+can be handled or not, we attempt to --- for each $\phi \in \Gamma$,
+solve the formula, $\phi \implies \mathcal{I}_\phi$.  If any handler
+solves the formula, it can handle the intent.  In the Android
+framework, there are situations in which multiple handlers can execute
+an intent, Figure~\ref{fig:multiple-intents} shows an example where
+
+\paragraph*{Example: sending email through a client} 
+We might model an intent for an email client by giving the email
+subject, sendee, and text, along with a predicate \texttt{mimeType},
+which specified the mime type used.  In this case, the intent
+specifies a formula such as the following: \texttt{sendee =
+  email@example.com} $\land$ \texttt{body = some text...} $\land$
+$Handles($\texttt{someFormat}$)$.  In this example, we used the
+$Handles$ predicate.  In general the set of predicates is unbounded,
+we do not provide any infrastructure to make the predicates unique.
+In particular, we could also use a hierarchical namespace of
+predicates prefixed by the application package: this is simply naming
+convention.
+
+\paragraph*{Modeling the Android system intent}
+All intents seen in the Android system match our formalism, we
+investigted the implementation of the Android \texttt{PackageManager}
+\ref{android:package-manager}.  We also found that intents are matched
+only up to certain number of parameters, in particular only a few
+fields are considered in some situations (in the case of a
+\texttt{PendingIntent}.  We can handle all of the standard Android
+intents (included in the standard apps that come preinstalled on the
+device) using the formalism given in this section.
+
+\begin{figure}[t]
+  \centering
+    \includegraphics[width=.3\textwidth]{sharing}
+    \caption{When the system cannot fully resolve an intent, it is
+      possible that there will be more than one process which can
+      handle the intent.  In our model we view this as a nonempty
+      handler set.}
+\end{figure}
 
 \section{Inter-Device Intents}
 
@@ -262,7 +323,6 @@ has numerous benefits:
 \item Sharing code on other devices: if code for one intent
   can be handled by another device then any set of devices can
   effectively share capabilities across a network.
-\item 
 \end{itemize}
 
 \paragraph*{Eligible Intents for Inter Device Communication:}
@@ -341,8 +401,7 @@ When writing an appliation which uses the mobile intents library, it
 must first register a set of constraints with the background service
 running on the device.  In registering an intent, an intent handler
 constructs a constraint set which it provides to the system and calls
-\texttt{MobileIntentHandler.registerProvider} with the constraint as
-an argument.
+\texttt{registerProvider} with the constraint as an argument.
 
 \paragraph{Matching constraints on the client device}
 
@@ -579,13 +638,18 @@ mIntentHelper.registerIntent(constraints, emailBroadcast);
 \begin{figure}
   \label{fig:email-receiver}
   \begin{lstlisting}
-public class EmailReceiver extends BroadcastReceiver {
+public class EmailReceiver extends
+  BroadcastReceiver {
   @Override
-  public void onReceive(Context context, Intent intent) {
-    Bundle extras = intent.getExtras();
-    String mAddress = getStringExtra(``recepient'');
-    String mBody = getStringExtra(``body'');
-    // Send email using recepient and body...
+  public void onReceive(
+    Context context, Intent intent) {
+    Bundle extras = 
+      intent.getExtras();
+    String mAddress =
+       getStringExtra(``recepient'');
+    String mBody = 
+      getStringExtra(``body'');
+    // Send email ...
   }
 } 
 \end{lstlisting}
@@ -665,7 +729,17 @@ In a very large network we may have many devices that can receive an
 arbitrary intent.  Unfortunately the strategy used in our does not
 have any notion of a ``best'' device to handle an intent.  There are
 many algorithms which can help us with this, mostly inspired from the
-field of mobile routing.  We plan to consider 
+field of mobile routing.  We plan to consider approaches based on
+models from ad hoc routing protocols, possibly using epidemic routing
+protocols.  Because devices may be disconnected and move in a wide
+area, we consider that protocols such as PRoPHET \ref{prophet:2003}
+may be useful in designing delay tolerant networks which exchange
+intents and route them to handlers based on who has processing power.
+This is particularly exciting because it introduces a new set of
+constraints (based on our intent model) that dictates the routing
+protocol.  Our system bears resemblance to those studied in the
+literature, in particular to other message passing systems for delay
+tolerant networks, such as \ref{message-passing-dtn}.
 
 \paragraph{Error handling and timeouts} 
 
@@ -688,12 +762,41 @@ is the maximum time (from its being issued) which an intent can be
 handled.  This will also be used in our intent routing and scheduling
 on the web service.
 
-\section{Related Work}
-Oleg \cite{kiselyov:2006} ...
-
 \section{Conclusion}
+We view the Android system as greatly underutilized because
+programmers would like to harness the power of other applications on
+the platform, but cannot because it is unlikely an app will be
+installed on a user's device.  Unfortunately, many common operations
+such as selecting files, sending email, processing pictures, etc...,
+all have very well designed apps to solve their problems.  But
+developers are forced to duplicate the efforts of other programmers if
+the app is not present on the user's device.  Unfortunately, many
+users do indeed have very space constrained devices and cannot store
+as many apps as they would like.
 
-Our 
+Instead, we hope that our proposal and sample implementation will
+allow programmers to write lightweight distributed apps.
+Additionally, we see this as an advancement which helps users of very
+space constrained devices.  Along with this, we would like to foster a
+better community of cooperative development, so that developers may
+focus on writing small, effective, and useful apps, that can share
+data throughout the network.  Current sharing approaches are
+heavyweight, requiring knowledge of web backends and cloud protocols,
+on top of the more complex features necessary to implement this (in
+particular concurrency).  Our library obviates the need for these more
+complex interaction patterns and allows Android application developers
+to do inter device messaging and communication using a common pattern
+which already exists in the Android platform.
+
+We still think there is much room for improvement, especially since
+the security aspects of our approach are not well understood: there
+are many future improvements which can be made to our system.  We wish
+to use our system as the basis for future work in cloud based Android
+programming.  Specifically, we wish to be able to share code across
+devices on the network.  While this is a complex issue, we have used
+this project to gain an understanding of the issues underpinning
+network based cloud services on Android, and plan to use our
+implementation to develop this further work.
 
 \bibliography{intents}{}
 \bibliographystyle{plain}
