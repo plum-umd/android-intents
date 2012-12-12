@@ -89,7 +89,7 @@ In this paper we present:
 Intents in Android are lightweight messages across sent process
 boundaries used for a variety of purposes: they are the main
 interprocess communication primitive in the system. Figure
-~\ref{fig:intent-example} gives an example of an Intent as it is used
+~\ref{fig:qr-scanning-intent} gives an example of an Intent as it is used
 in the Android system.  An intent object is a late bound message
 asking the system perform some work on the Application's behalf.
 After the work is performed, the system can call back into the
@@ -155,9 +155,11 @@ intent which names a package (specific Java code) which should handle
 the intent.  An example of this kind of intent is requesting the
 system to scan a QR code, using a specific QR code scanner, using a
 specific scanner installed on many systems.
-Figure~\ref{fig:qr-scanning-intent}.  (Examples in this section are
-examples given in a Google Android developers blog post exhibiting the
-use of intents \ref{android:intentblog}.)
+Figure~\ref{fig:qr-scanning-intent} shows the implementation of this
+kind of intent: note that in this example there is an explicit naming
+of which package should receive the intent.  (This example was taken
+from a Google Android developers blog post exhibiting the use of
+intents \ref{android:intentblog}.)
 
 \begin{figure}
   \caption{QR Scannig Intent}
@@ -273,7 +275,10 @@ can be handled or not, we attempt to --- for each $\phi \in \Gamma$,
 solve the formula, $\phi \implies \mathcal{I}_\phi$.  If any handler
 solves the formula, it can handle the intent.  In the Android
 framework, there are situations in which multiple handlers can execute
-an intent, Figure~\ref{fig:multiple-intents} shows an example where
+an intent, Figure~\ref{fig:multiple-intents} shows an example of this
+behavior.  In our model this simply maps to a nonempty handler set,
+though we do not have any priority ordering among handlers.  This is
+included in Android, but we leave it as future work to model it.
 
 \paragraph*{Example: sending email through a client} 
 We might model an intent for an email client by giving the email
@@ -299,6 +304,7 @@ intents (included in the standard apps that come preinstalled on the
 device) using the formalism given in this section.
 
 \begin{figure}[t]
+  \label{fig:multiple-intents}
   \centering
     \includegraphics[width=.3\textwidth]{sharing}
     \caption{When the system cannot fully resolve an intent, it is
@@ -626,7 +632,7 @@ public void onReceiveMobileIntentResult(
 To handle email and demonstrate handling distributed intents, we
 implement our email handler as a separate app which registers with the
 mobile intent service.  The app --- upon starting --- constructs an
-intent set (shown in Figure~\ref{fig:email-intent-provider}) and then
+intent set (shown in Figure~\ref{fig:email-receiver}) and then
 registers it with the mobile intents provider.  The intents provider
 then inserts the constraint provider set into the local database of
 the device so that it can route intents properly upon receiving them.
@@ -679,6 +685,7 @@ following handlers:
 \end{itemize}
 
 \begin{figure*}
+  \label{fig:registration-code}
 \begin{lstlisting}
 Intent emailIntent = new Intent();
 emailIntent.setComponent(EmailReceiver.class);
