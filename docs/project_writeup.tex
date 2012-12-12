@@ -369,7 +369,6 @@ except timeouts, which are being added as current work.)
 \section{The Web Service}
 
 
-
 In our project, we set up a RESTful web service to route intents between Android phones, so that communication can happen across the network.  The intent interface in our implementation talks to this service using standard HTTP communication.  We chose to set up the web service using Ruby on Rails, a popular web application framework for the Ruby programming language with REST support.   In particular, our web service uses the Google Cloud Messaging (GCM) service for Android to respond to the devices.  GCM is a new technology released in June 2012 and is a free service that allows our web server to send lightweight messages to Android phones.  In our service, GCM is used as a simple protocol for sending messages for registered phones, in addition to allowing the web service to tell the Android phone that they have a new request or response.
 
 Our web service stores information in two databases:
@@ -423,6 +422,10 @@ If all remote phones report back that the execution failed, then we send this re
 \includegraphics[scale=0.45]{s4b.jpg}
 
 However, suppose there are n remote phones and the first n - 1 executions resulted in failure, but the last execution results in a success.  In this special case we will only report the successful execution with the output to the requester.
+
+
+In Rails, a Controller receives a request and produces the appropriate output. 
+The main controller in our web service is the Rails intent request controller.  We show the source code for this controller in the appendix.
 
 
 \section{The Java library}
@@ -855,5 +858,165 @@ implementation to develop this further work.
 
 \bibliography{intents}{}
 \bibliographystyle{plain}
+
+
+\section{Appendix}
+
+\begin{figure*}
+\begin{lstlisting}[name=ex]
+class RequestsController < ApplicationController
+  # GET /requests
+  # GET /requests.json
+  def index
+    @requests = Request.all
+
+    respond_to do |format|
+      format.html # index.html.erb
+      format.json { render json: @requests }
+    end
+  end
+
+  # GET /requests/1
+  # GET /requests/1.json
+  def show
+    @request = Request.find(params[:id])
+
+    respond_to do |format|
+      format.html # show.html.erb
+      format.json { render json: @request }
+    end
+  end
+
+  # GET /requests/new
+  # GET /requests/new.json
+  def new
+    @request = Request.new
+
+    respond_to do |format|
+      format.html # new.html.erb
+      format.json { render json: @request }
+    end
+  end
+
+  # GET /requests/1/edit
+  def edit
+    @request = Request.find(params[:id])
+  end
+
+  # POST /requests
+  # POST /requests.json
+  def create
+    @request = Request.new(params[:request])
+
+    registration_ids = []
+    @request.num_phones = 0
+
+    PhoneRegistration.all.each { |p|
+      if p.device_ident != @request.requester_device_ident
+       registration_ids.push(p.registration_ident)
+       @request.num_phones = @request.num_phones + 1
+      end
+    }
+
+    @request.status = ``active''
+    @request.num_errors = 0
+    id  = Request.all.size + 1
+
+
+    gcm = GCM.new(``api_key'')
+    options = {data: {program: @request.intent_program, request_id: id}}
+    response = gcm.send_notification(registration_ids, options)
+
+    respond_to do |format|
+      if @request.save
+        format.html { redirect_to @request, notice: 'Request was successfully created.' }
+        format.json { render json: @request, status: :created, location: @request }
+      else
+        format.html { render action: ``new'' }
+        format.json { render json: @request.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+
+  # PUT /requests/1
+  # PUT /requests/1.json
+  def update
+    @request = Request.find(params[:id])
+
+    registration_ids = []
+
+    PhoneRegistration.all.each { |p|
+      if p.device_ident == @request.requester_device_ident
+        registration_ids = [p.registration_ident]
+        break
+      end
+    }
+
+    if registration_ids == []
+      raise Exception, ``No matching registration id for device id''
+    end
+
+    id = params[:id]
+    r_num_errors = @request.num_errors
+    params[:request][``num_errors''] = @request.num_errors
+    status = @request.status
+
+    if params[:request][``output''].empty? == false and @request.status = ``active''
+      params[:request][``status''] = ``success''
+      status = params[:request][``status'']
+      output = params[:request][``output'']
+
+      gcm = GCM.new(``api_key'')
+      options = {data: {output: output, request_id: id}}
+      response = gcm.send_notification(registration_ids, options)
+    elsif params[:request][``error''].empty? == false and @request.status == ``active''
+      params[:request][``num_errors''] = params[:request][``num_errors''].to_i + 1
+      r_num_errors = params[:request][``num_errors'']  
+
+      gcm = GCM.new(``api_key'')
+      options = {data: {error: @request.error, request_id: id}}
+      response = gcm.send_notification(registration_ids, options)
+
+      if params[:request][``num_errors''] == @request.num_phones
+        params[:request][``status''] = ``error''
+        status = ``error''
+      end
+    end
+
+    params[:request][:requester_device_ident] = @request.requester_device_ident
+    params[:request][:intent_program] = @request.intent_program
+    params[:request][:num_phones] = @request.num_phones
+    params[:request][:num_errors] = r_num_errors
+    params[:request][:status] = status
+
+
+    respond_to do |format|
+      if @request.update_attributes(params[:request])
+        format.html { redirect_to @request, notice: 'Request was successfully updated.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: ``edit'' }
+        format.json { render json: @request.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  # DELETE /requests/1
+  # DELETE /requests/1.json
+  def destroy
+    @request = Request.find(params[:id])
+    @request.destroy
+
+    respond_to do |format|
+      format.html { redirect_to requests_url }
+      format.json { head :no_content }
+    end
+  end
+end
+\end{lstlisting}
+\caption{Intent request controller}
+\label{fig:intent_request_controller}
+\end{figure*}
 
 \end{document}
