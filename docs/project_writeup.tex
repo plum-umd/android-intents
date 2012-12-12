@@ -160,6 +160,7 @@ examples given in a Google Android developers blog post exhibiting the
 use of intents \ref{android:intentblog}.)
 
 \begin{figure}
+  \caption{QR Scannig Intent}
   \label{fig:qr-scanning-intent}
   \begin{lstlisting}
 Intent intent = new Intent(
@@ -184,14 +185,16 @@ and its MIME type (a jpeg image, for example) and then specify the
 \texttt{ACTION\_SEND} action (specifying the action to be performed).  The
 system would then see there were multiple programs capable of handling
 the intent, among them the email app and the bluetooth app.
-Figure~\ref{fig:share-intent} shows an example of this kind of intent
-being sent to the sysytem, we highlight it because it is similar to
+Figure~\ref{fig:share-intent} 
+shows an example of this kind of intent
+being sent to the system, we highlight it because it is similar to
 the intent that we construct for our email in our case study
 (Section~\ref{section:case-study}).
 
 \begin{figure}
+  \caption{Share Intent}
   \label{fig:share-intent}
-  \begin{lstlisting}[name=Ex]
+  \begin{lstlisting}
 // Construct the skeleton of the intent
 Intent intent=
   new Intent(Intent.ACTION_SEND);
@@ -285,7 +288,7 @@ In particular, we could also use a hierarchical namespace of
 predicates prefixed by the application package: this is simply naming
 convention.
 
-\paragraph*{Modeling the Android system intent}
+\paragraph*{Modeling the Android system intent}\label{section:intents-model}
 All intents seen in the Android system match our formalism, we
 investigted the implementation of the Android \texttt{PackageManager}
 \ref{android:package-manager}.  We also found that intents are matched
@@ -366,66 +369,67 @@ different routing algorithm.  (Our library currently provides no
 gaurentees to the programmer on routing of messages between devices,
 except timeouts, which are being added as current work.)
 
-\section{The Web Service}
+\section{The Web Service}\label{section:webservice}
 
 
-In our project, we set up a RESTful web service to route intents between Android phones, so that communication can happen across the network.  The intent interface in our implementation talks to this service using standard HTTP communication.  We chose to set up the web service using Ruby on Rails, a popular web application framework for the Ruby programming language with REST support.   In particular, our web service uses the Google Cloud Messaging (GCM) service for Android to respond to the devices.  GCM is a new technology released in June 2012 and is a free service that allows our web server to send lightweight messages to Android phones.  In our service, GCM is used as a simple protocol for sending messages for registered phones, in addition to allowing the web service to tell the Android phone that they have a new request or response.
+In our project, we set up a RESTful web service to route intents between Android phones, so that communication can happen across the network.  The intent interface in our implementation talks to this service using standard HTTP communication.  We chose to set up the web service using Ruby on Rails (often shortened to Rails), a popular web application framework for the Ruby programming language with REST support.   In particular, our web service uses the Google Cloud Messaging (GCM) service for Android to respond to the devices.  GCM is a new technology released in June 2012 and is a free service that allows our web server to send lightweight messages to Android phones.  In our service, GCM is used as a simple protocol for sending messages for registered phones, in addition to allowing the web service to tell the Android phone that they have a new request or response.
 
-Our web service stores information in two databases:
+Our web service stores information in two databases: a device registration database and an intent request database.
 
-The first web service has a simple database that stores information about registered phones.  It stores two fields: 
 
-1) device id - a constant id that uniquely identifies the device.
+The first is a simple database that stores information about registered phones.  It stores two fields: 
 
-2) device registration id - a registration id which GCM.
+ \begin{enumerate}
+ \item device id - a constant id that uniquely identifies the device.
+ \item device registration id - a registration id with GCM.
+ \end{enumerate}
 
 The main web service database stores information about each intent request, which includes:
 
-1) Requester device id
-
-3) Requester device registration id
-
-2) Intent program (JSON string)
-
-3) Output for successful completion
-
-4) Error message for failure
-
-5) Status (active / success / error)
-
-6) Number of remote phones available to run the intent program
-
-7) Number of errors received from remote phones for running the intent program
+\begin{enumerate}
+\item Requester device id
+\item Requester device registration id
+\item Intent program (JSON string)
+\item Output for successful completion
+\item Error message for failure
+\item Status (active / success / error)
+\item Number of remote phones available to run the intent program
+\item Number of errors received from remote phones for running the intent program
+\end{enumerate}
 
 Here we show how an intent request works with our web service.
 
-1) Various Android phones register with our web service as available phones that can run intent programs.  
+\begin{enumerate}
+\item Various Android phones register with our web service as available phones that can run intent programs.  
 
 \includegraphics[scale=0.45]{s1.jpg}
 
-2) The Android phone sends an intent request to our web service
+\item An Android phone sends an intent request to our web service
 
 \includegraphics[scale=0.45]{s2.jpg}
 
-3)  When an intent request is issued to our web service, the service will forward this request to all phones stored in our database, except the requester.  The intent will be stored in a JSON string. Since the web service cannot talk to any phone directly, the web service first sends the intent to the Google Cloud Messaging service, which then forwards the request to the individual remote phones. 
+\item  When an intent request is issued to our web service, the service will indirectly forward this request to all phones stored in our database, except the requester.  The intent is stored as a JSON string. Since the web service cannot talk to any phone directly, the web service first sends the intent to the Google Cloud Messaging service, which then forwards the request to the individual remote phones. 
 
 \includegraphics[scale=0.45]{s3.jpg}
 
-4) Each remote phone will execute the intent when possible, and will directly contact our web service to inform us that it has finished the job.  The termination of executing an intent program on a remote phone indicates two distinct types of results: successful completion and failure.  Failure may involve errors like hardware problems.   If the job was successfully completed, then the web service will be informed of the success and the output.  If the job failed, then the web service will be informed of the failure along with the error message.
+\item Each remote phone will execute the intent when possible, and will directly contact our web service to inform us that it has finished the job.  The termination of executing an intent program on a remote phone indicates two distinct types of results: successful completion and failure.  Failure may involve errors like hardware problems.   If the job was successfully completed, then the web service will be informed of the success and the output.  If the job failed, then the web service will be informed of the failure along with the error message.
 
-When the web service receives the first successful execution notification, it will send the output back to the requester through GCM. 
+When the web service receives the first successful execution completion notification, it will send the output back to the requester through GCM. 
 
 \includegraphics[scale=0.45]{s4a.jpg}
 
-If all remote phones report back that the execution failed, then we send this result along with an error message back to the requester.
+If all remote phones report back that the execution failed, then we send this result along with the error message back to the requester.
 
 \includegraphics[scale=0.45]{s4b.jpg}
 
 However, suppose there are n remote phones and the first n - 1 executions resulted in failure, but the last execution results in a success.  In this special case we will only report the successful execution with the output to the requester.
 
+\end{enumerate}
 
 In Rails, a Controller receives a request and produces the appropriate output. 
-The main controller in our web service is the Rails intent request controller.  We show the source code for this controller in the appendix.
+The main controller in our web service is the Rails intent request controller. 
+We have included the key parts of the source code for this controller in the 
+appendix with comments.
 
 
 \section{The Java library}
@@ -543,7 +547,6 @@ implemented this in our class and show it as an example
 (Figure~\ref{fig:send-email-intent}).
 
 \begin{figure*}
-  \label{fig:send-email-intent}
   \begin{lstlisting}
 public void onClick(View v) {
   Intent i = new Intent(Intent.ACTION_SEND);
@@ -563,6 +566,8 @@ public void onClick(View v) {
   \caption{Backing up the contents of the database to an email account
     using the normal Android platform, using a standard
     \texttt{ACTION\_SEND} intent to accomplish the task.}
+  \label{fig:send-email-intent}
+
 \end{figure*}
 
 Of course the problem with the mobile intents library is that the code
@@ -581,8 +586,7 @@ Although this code also performs complex network and stateful
 interactions with our web service and the cloud, it is still very
 simple for the programmer to write.
 
-\begin{figure}[t]
-  \label{fig:mobile-intents-email-example}
+\begin{figure}[t]  
   \begin{lstlisting}
 public void onClick(View v) {
   MobileIntent i = new MobileIntent();
@@ -614,6 +618,7 @@ public void onReceiveMobileIntentResult(
 \caption{A modified version of the code to use our mobile intents
   library.  All of the pieces match up with the previous code with
   slight cosmetic changes accomodating the new intent library.}
+\label{fig:mobile-intents-email-example}
 \end{figure}
 
 \subsection{Email Intent Handler}
@@ -863,53 +868,19 @@ implementation to develop this further work.
 \section{Appendix}
 
 \begin{figure*}
-\begin{lstlisting}[name=ex]
-class RequestsController < ApplicationController
-  # GET /requests
-  # GET /requests.json
-  def index
-    @requests = Request.all
-
-    respond_to do |format|
-      format.html # index.html.erb
-      format.json { render json: @requests }
-    end
-  end
-
-  # GET /requests/1
-  # GET /requests/1.json
-  def show
-    @request = Request.find(params[:id])
-
-    respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @request }
-    end
-  end
-
-  # GET /requests/new
-  # GET /requests/new.json
-  def new
-    @request = Request.new
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.json { render json: @request }
-    end
-  end
-
-  # GET /requests/1/edit
-  def edit
-    @request = Request.find(params[:id])
-  end
+\begin{lstlisting}
+  class RequestController < ApplicationController
+  ...
 
   # POST /requests
   # POST /requests.json
-  def create
+  def create   # Called for new intent request creation
     @request = Request.new(params[:request])
 
     registration_ids = []
     @request.num_phones = 0
+
+    # get the number of registered remote phones 
 
     PhoneRegistration.all.each { |p|
       if p.device_ident != @request.requester_device_ident
@@ -918,11 +889,13 @@ class RequestsController < ApplicationController
       end
     }
 
+    # at the beginning, set request status to active
+    #                   mark 0 error received from remote phones
     @request.status = ``active''
     @request.num_errors = 0
     id  = Request.all.size + 1
 
-
+    # Use the GCM Ruby gem method to send intent notification to phones
     gcm = GCM.new(``api_key'')
     options = {data: {program: @request.intent_program, request_id: id}}
     response = gcm.send_notification(registration_ids, options)
@@ -937,21 +910,22 @@ class RequestsController < ApplicationController
       end
     end
   end
+\end{lstlisting}
+\caption{Intent request controller creation method}
+\label{fig:intent_request_controller_create}
+\end{figure*}
 
-
+\begin{figure*}
+\begin{lstlisting}
   # PUT /requests/1
   # PUT /requests/1.json
-  def update
+  def update   # Called the remote phone finishes executing the intent
     @request = Request.find(params[:id])
 
     registration_ids = []
 
-    PhoneRegistration.all.each { |p|
-      if p.device_ident == @request.requester_device_ident
-        registration_ids = [p.registration_ident]
-        break
-      end
-    }
+    # find registration id of the requester
+    ... 
 
     if registration_ids == []
       raise Exception, ``No matching registration id for device id''
@@ -967,12 +941,21 @@ class RequestsController < ApplicationController
       status = params[:request][``status'']
       output = params[:request][``output'']
 
+      # if job status is still active on the web service and a success 
+      # completion notification is received from a remote phone, then
+      # send a success notification along with the output to the requester
+      # through GCM
+
       gcm = GCM.new(``api_key'')
       options = {data: {output: output, request_id: id}}
       response = gcm.send_notification(registration_ids, options)
     elsif params[:request][``error''].empty? == false and @request.status == ``active''
       params[:request][``num_errors''] = params[:request][``num_errors''].to_i + 1
       r_num_errors = params[:request][``num_errors'']  
+
+      # if job is active and all remote phones failed to execute the
+      # intent request, then send an error message to the requester
+      # through GCM
 
       gcm = GCM.new(``api_key'')
       options = {data: {error: @request.error, request_id: id}}
@@ -984,12 +967,8 @@ class RequestsController < ApplicationController
       end
     end
 
-    params[:request][:requester_device_ident] = @request.requester_device_ident
-    params[:request][:intent_program] = @request.intent_program
-    params[:request][:num_phones] = @request.num_phones
-    params[:request][:num_errors] = r_num_errors
-    params[:request][:status] = status
-
+    # add appropriate values to params hash
+    ...
 
     respond_to do |format|
       if @request.update_attributes(params[:request])
@@ -1002,21 +981,11 @@ class RequestsController < ApplicationController
     end
   end
 
-  # DELETE /requests/1
-  # DELETE /requests/1.json
-  def destroy
-    @request = Request.find(params[:id])
-    @request.destroy
-
-    respond_to do |format|
-      format.html { redirect_to requests_url }
-      format.json { head :no_content }
-    end
-  end
+  ...
 end
 \end{lstlisting}
-\caption{Intent request controller}
-\label{fig:intent_request_controller}
+\caption{Intent request controller update method}
+\label{fig:intent_request_controller_update}
 \end{figure*}
 
 \end{document}
