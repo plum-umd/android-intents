@@ -7,6 +7,7 @@
 \usepackage{listings}
 \usepackage{color}
 \usepackage{caption}
+\usepackage{url}
 
 \lstset{numbers=left, numberstyle=\small, numbersep=8pt, frame = single, language=Java, framexleftmargin=15pt}
 
@@ -375,10 +376,22 @@ different routing algorithm.  (Our library currently provides no
 gaurentees to the programmer on routing of messages between devices,
 except timeouts, which are being added as current work.)
 
-\section{The Web Service}\label{section:webservice}
+\section{The Web Service}
+\label{section:webservice}
 
-
-In our project, we set up a RESTful web service to route intents between Android phones, so that communication can happen across the network.  The intent interface in our implementation talks to this service using standard HTTP communication.  We chose to set up the web service using Ruby on Rails (often shortened to Rails), a popular web application framework for the Ruby programming language with REST support.   In particular, our web service uses the Google Cloud Messaging (GCM) service for Android to respond to the devices.  GCM is a new technology released in June 2012 and is a free service that allows our web server to send lightweight messages to Android phones.  In our service, GCM is used as a simple protocol for sending messages for registered phones, in addition to allowing the web service to tell the Android phone that they have a new request or response.
+In our project, we set up a RESTful web service to route intents
+between Android phones, so that communication can happen across the
+network.  The intent interface in our implementation talks to this
+service using standard HTTP communication.  We chose to set up the web
+service using Ruby on Rails (often shortened to Rails), a popular web
+application framework for the Ruby programming language with REST
+support.  In particular, our web service uses the Google Cloud
+Messaging (GCM) service for Android to respond to the devices.  GCM is
+a new technology released in June 2012 and is a free service that
+allows our web server to send lightweight messages to Android phones.
+In our service, GCM is used as a simple protocol for sending messages
+for registered phones, in addition to allowing the web service to tell
+the Android phone that they have a new request or response.
 
 Our web service stores information in two databases: a device registration database and an intent request database.
 
@@ -408,27 +421,61 @@ Here we show how an intent request works with our web service.
 \begin{enumerate}
 \item Various Android phones register with our web service as available phones that can run intent programs.  
 
-\includegraphics[scale=0.45]{s1.jpg}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.4\textwidth]{s1.jpg}
+\end{figure}
 
 \item An Android phone sends an intent request to our web service
 
-\includegraphics[scale=0.45]{s2.jpg}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.4\textwidth]{s2.jpg}
+\end{figure}
 
-\item  When an intent request is issued to our web service, the service will indirectly forward this request to all phones stored in our database, except the requester.  The intent is stored as a JSON string. Since the web service cannot talk to any phone directly, the web service first sends the intent to the Google Cloud Messaging service, which then forwards the request to the individual remote phones. 
+\item When an intent request is issued to our web service, the service
+  will indirectly forward this request to all phones stored in our
+  database, except the requester.  The intent is stored as a JSON
+  string. Since the web service cannot talk to any phone directly, the
+  web service first sends the intent to the Google Cloud Messaging
+  service, which then forwards the request to the individual remote
+  phones.
 
-\includegraphics[scale=0.45]{s3.jpg}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.4\textwidth]{s3.jpg}
+\end{figure}
 
-\item Each remote phone will execute the intent when possible, and will directly contact our web service to inform us that it has finished the job.  The termination of executing an intent program on a remote phone indicates two distinct types of results: successful completion and failure.  Failure may involve errors like hardware problems.   If the job was successfully completed, then the web service will be informed of the success and the output.  If the job failed, then the web service will be informed of the failure along with the error message.
+\item Each remote phone will execute the intent when possible, and
+  will directly contact our web service to inform us that it has
+  finished the job.  The termination of executing an intent program on
+  a remote phone indicates two distinct types of results: successful
+  completion and failure.  Failure may involve errors like hardware
+  problems.  If the job was successfully completed, then the web
+  service will be informed of the success and the output.  If the job
+  failed, then the web service will be informed of the failure along
+  with the error message.
 
-When the web service receives the first successful execution completion notification, it will send the output back to the requester through GCM. 
+  When the web service receives the first successful execution
+  completion notification, it will send the output back to the
+  requester through GCM.
 
-\includegraphics[scale=0.45]{s4a.jpg}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.4\textwidth]{s4a.jpg}
+\end{figure}
 
 If all remote phones report back that the execution failed, then we send this result along with the error message back to the requester.
 
-\includegraphics[scale=0.45]{s4b.jpg}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.4\textwidth]{s4b.jpg}
+\end{figure}
 
-However, suppose there are n remote phones and the first n - 1 executions resulted in failure, but the last execution results in a success.  In this special case we will only report the successful execution with the output to the requester.
+However, suppose there are n remote phones and the first n - 1
+executions resulted in failure, but the last execution results in a
+success.  In this special case we will only report the successful
+execution with the output to the requester.
 
 \end{enumerate}
 
@@ -436,7 +483,6 @@ In Rails, a Controller receives a request and produces the appropriate output.
 The main controller in our web service is the Rails intent request controller. 
 We have included the key parts of the source code for this controller in the 
 appendix with comments.
-
 
 \section{The Java library}
 
@@ -685,7 +731,6 @@ following handlers:
 \end{itemize}
 
 \begin{figure*}
-  \label{fig:registration-code}
 \begin{lstlisting}
 Intent emailIntent = new Intent();
 emailIntent.setComponent(EmailReceiver.class);
@@ -703,10 +748,10 @@ mIntentHelper.registerIntent(constraints, emailBroadcast);
   platform.  The programmer writes their broadcast receiver (the code
   which handles incoming messages) as usual and then passes in an
   intent which will execute the provider as usual.}
+\label{fig:registration-code}
 \end{figure*}
 
 \begin{figure}
-  \label{fig:email-receiver}
   \begin{lstlisting}
 public class EmailReceiver extends
   BroadcastReceiver {
@@ -727,6 +772,7 @@ public class EmailReceiver extends
   background service, it simply retrieves the recepient and body from
   the intent and then performs a complex interaction with the javamail
   API, we have elided this part for simplicity.}
+  \label{fig:email-receiver}
 \end{figure}
 
 \section{Problems, Further, and Related Work}
