@@ -191,7 +191,7 @@ the intent that we construct for our email in our case study
 
 \begin{figure}
   \label{fig:share-intent}
-  \begin{lstlisting}
+  \begin{lstlisting}[name=Ex]
 // Construct the skeleton of the intent
 Intent intent=
   new Intent(Intent.ACTION_SEND);
@@ -368,6 +368,61 @@ except timeouts, which are being added as current work.)
 
 \section{The Web Service}
 
+
+
+In our project, we set up a RESTful web service to route intents between Android phones, so that communication can happen across the network.  The intent interface in our implementation talks to this service using standard HTTP communication.  We chose to set up the web service using Ruby on Rails, a popular web application framework for the Ruby programming language with REST support.   In particular, our web service uses the Google Cloud Messaging (GCM) service for Android to respond to the devices.  GCM is a new technology released in June 2012 and is a free service that allows our web server to send lightweight messages to Android phones.  In our service, GCM is used as a simple protocol for sending messages for registered phones, in addition to allowing the web service to tell the Android phone that they have a new request or response.
+
+Our web service stores information in two databases:
+
+The first web service has a simple database that stores information about registered phones.  It stores two fields: 
+
+1) device id - a constant id that uniquely identifies the device.
+
+2) device registration id - a registration id which GCM.
+
+The main web service database stores information about each intent request, which includes:
+
+1) Requester device id
+
+3) Requester device registration id
+
+2) Intent program (JSON string)
+
+3) Output for successful completion
+
+4) Error message for failure
+
+5) Status (active / success / error)
+
+6) Number of remote phones available to run the intent program
+
+7) Number of errors received from remote phones for running the intent program
+
+Here we show how an intent request works with our web service.
+
+1) Various Android phones register with our web service as available phones that can run intent programs.  
+
+\includegraphics[scale=0.45]{s1.jpg}
+
+2) The Android phone sends an intent request to our web service
+
+\includegraphics[scale=0.45]{s2.jpg}
+
+3)  When an intent request is issued to our web service, the service will forward this request to all phones stored in our database, except the requester.  The intent will be stored in a JSON string. Since the web service cannot talk to any phone directly, the web service first sends the intent to the Google Cloud Messaging service, which then forwards the request to the individual remote phones. 
+
+\includegraphics[scale=0.45]{s3.jpg}
+
+4) Each remote phone will execute the intent when possible, and will directly contact our web service to inform us that it has finished the job.  The termination of executing an intent program on a remote phone indicates two distinct types of results: successful completion and failure.  Failure may involve errors like hardware problems.   If the job was successfully completed, then the web service will be informed of the success and the output.  If the job failed, then the web service will be informed of the failure along with the error message.
+
+When the web service receives the first successful execution notification, it will send the output back to the requester through GCM. 
+
+\includegraphics[scale=0.45]{s4a.jpg}
+
+If all remote phones report back that the execution failed, then we send this result along with an error message back to the requester.
+
+\includegraphics[scale=0.45]{s4b.jpg}
+
+However, suppose there are n remote phones and the first n - 1 executions resulted in failure, but the last execution results in a success.  In this special case we will only report the successful execution with the output to the requester.
 
 
 \section{The Java library}
