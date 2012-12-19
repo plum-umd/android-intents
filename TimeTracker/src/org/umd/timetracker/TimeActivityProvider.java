@@ -53,12 +53,12 @@ public class TimeActivityProvider extends ContentProvider {
 	    db.execSQL("CREATE TABLE " + ACTIVITIES_TABLE_NAME + " ("
 		       + ActivityColumns._ID + " INTEGER PRIMARY KEY,"
 		       + ActivityColumns.ACTIVITY_END_TIME
-		       + " INTEGER," + ActivityColumns.ACTIVITY_NAME
+		       + " VARHCAR(60)," + ActivityColumns.ACTIVITY_NAME
 		       + " VARCHAR(200),"
 		       + ActivityColumns.ACTIVITY_TAGS + " TEXT,"
 		       + ActivityColumns.ACTIVITY_NOTE + " TEXT,"
 		       + ActivityColumns.ACTIVITY_START_TIME
-		       + " INTEGER" + ");");
+		       + " VARCHAR(60)" + ");");
 	}
 	
 	@Override

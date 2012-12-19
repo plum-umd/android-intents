@@ -1,5 +1,9 @@
 package org.umd.timetracker;
 
+import org.joda.time.Period;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.v4.app.LoaderManager;
@@ -36,5 +40,64 @@ public class TimeTracker
 	public static final String ACTIVITY_START_TIME = "start_time";
 	public static final String ACTIVITY_END_TIME = "end_time";
 	public static final String ACTIVITY_NOTE = "note"; 
+    }
+    
+    // Static constants used throughout the project
+    public static final String SHARED_PREFS_FILE = "prefs";
+    
+    public static final String TAG_SEPARATOR = ",";
+
+    /**
+     * Get the shared preferences file used to store the preferences
+     * used in the app.
+     *
+     * @param ctxt The application context.
+     */
+    public static SharedPreferences getSharedPreferences(Context ctxt) {
+	return ctxt.getSharedPreferences(SHARED_PREFS_FILE, Context.MODE_PRIVATE);
+    }
+    
+    /**
+     * Takes in a duration, as a number of milliseconds, and produces
+     * a localized string representing the date and time according to
+     * the user's settings.
+     * 
+     * @param A shared preferences file.
+     * @param duration The duration of the event being displayed.
+     */
+    public static String convertDurationToString(SharedPreferences prefs, Period p) {
+	if (p.getDays() > 1) {
+	    return p.getDays() + " days, " + p.getHours() + " hours";
+	} else if (p.getHours() > 1) {
+	    return p.getHours() + " hours, " + p.getMinutes() + " minutes";
+	} else if (p.getMinutes() > 1) {
+	    return p.getMinutes() + " minutes"; //, " + p.getSeconds() + " seconds";
+	} else if (p.getMinutes() == 1) {
+	    return p.getMinutes() + " minute";
+	} else {
+	    return p.getSeconds() + " seconds";
+	}
+    }
+    
+    /**
+     * Simply a boilerplate method for using {@link
+     * convertDurationToString(SharedPreferences, long)}, but grab 
+     * the default shared preferences file.
+     *
+     * @param ctxt The application context
+     * @param duration The period which the event happend.
+     */
+    public static String convertDurationToString(Context ctxt, Period duration) {
+	return convertDurationToString(getSharedPreferences(ctxt), duration);
+    }
+    
+    /**
+     * Throw an assertion error if some condition is not satisfied.
+     * Works without enabling assertions on the device.
+     */
+    public static void _assert(boolean condition, String message) {
+	if (!condition) {
+	    throw new AssertionError(message);
+	}
     }
 }

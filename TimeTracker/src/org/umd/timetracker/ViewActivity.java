@@ -1,27 +1,33 @@
 package org.umd.timetracker;
 
-import android.net.Uri;
-
-import android.util.Log;
-
-import android.widget.EditText;
-
 import org.umd.timetracker.TimeTracker.ActivityColumns;
+
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.joda.time.Interval;
+import org.joda.time.Period;
 
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextSwitcher;
 import android.widget.TextView;
-
-import java.util.Calendar;
+import android.widget.ViewSwitcher;
 
 /**
  * View and modify an activity, an atomic item that represents
@@ -29,25 +35,31 @@ import java.util.Calendar;
  * 
  * @author micinski
  */
-public class ViewActivity extends Activity implements View.OnClickListener
+public class ViewActivity extends Activity 
+    implements View.OnClickListener, 
+	       ViewSwitcher.ViewFactory
 {
     // Handler to update the UI and update the duration handler
     private Handler mDurationUpdateHandler = new Handler();
         
-    private long mStartTime;
-    private long mEndTime;
+    private DateTime mStartTime;
+    private DateTime mEndTime; // And end time of null indicates that
+			       // this is the present activity.
+    
     private String mActivityName;
     private String mTags; // List of comma separated tags
-    private int mId; // ID of the current activity, or -1 if it is the
-		     // most recent activity
+    private int mId = -1; // ID of the current activity, or -1 if it is the
+                          // most recent activity
     
-    private TextView mDurationView;
     private LinearLayout mTagsBox;
     private EditText mTagsEdit;
     private EditText mNameEdit;
     private TextView mActivityNameText;
+    private TextSwitcher mActivityDurationText;
     
     private static final String TAG = "org.umd.timetracker.ViewActivity";
+    
+    private static final long UPDATE_INTERVAL = 10 * 1000;
     
     /**
      * Boolean extra telling this activity that --- upon starting ---
@@ -73,38 +85,100 @@ public class ViewActivity extends Activity implements View.OnClickListener
 	mTagsEdit = (EditText)findViewById(R.id.tags_input);
 	mNameEdit = (EditText)findViewById(R.id.activity_input);
 	mActivityNameText = (TextView)findViewById(R.id.current_activity_name);
+	mTagsBox = (LinearLayout)findViewById(R.id.tag_set);
+	mTagsBox.setPadding(20,20,20,20);
+	mActivityDurationText = (TextSwitcher)findViewById(R.id.current_activity_duration);
 	((Button)findViewById(R.id.switch_activity_button)).setOnClickListener(this);
 	((Button)findViewById(R.id.stop_activity_button)).setOnClickListener(this);
+	// Stuff to make the duration view animate
+	mActivityDurationText.setFactory(this);
+        Animation in = AnimationUtils.loadAnimation(this,  android.R.anim.fade_in);
+        Animation out = AnimationUtils.loadAnimation(this, android.R.anim.fade_out);
+        mActivityDurationText.setInAnimation(in);
+        mActivityDurationText.setOutAnimation(out);
 	
-	// Check to see if we should create a new entry in the
-	// database.
-	if (getIntent().getExtras().getBoolean(CREATE_NEW_ACTIVITY)) {
-	    // We should create a new activity.  We first need to make
-	    // sure that we stop tracking the current event.
-	    
-	    long currentTime = Calendar.getInstance().getTime().getTime();
-	    ContentValues newActivity = new ContentValues();
-	    mActivityName = "New Activity";
-	    mStartTime = currentTime;
-	    mEndTime = -1;
-	    mTags = "";
-	    
-	    newActivity.put(ActivityColumns.ACTIVITY_NAME, mActivityName);
-	    newActivity.put(ActivityColumns.ACTIVITY_START_TIME, mStartTime);
-	    newActivity.put(ActivityColumns.ACTIVITY_END_TIME, mEndTime);
-	    newActivity.put(ActivityColumns.ACTIVITY_TAGS, mTags);
-	    
-	    mId = Integer.parseInt(getContentResolver().
-				   insert(ActivityColumns.CONTENT_URI,newActivity).
-				   getLastPathSegment());
-	} else if (getIntent().hasExtra(ACTIVITY_ID)) {
-	    // We received an ID of the activity to be displayed.
-	    updateViewFromId(getIntent().getExtras().getInt(ACTIVITY_ID));
+	// Check to see if this is a result of a configuration change
+	if (true) {//savedInstanceState == null) {
+	    // Check to see if we should create a new entry in the
+	    // database.
+	    if (intent.getExtras().getBoolean(CREATE_NEW_ACTIVITY)) {
+		createNewActivity(getIntent());
+	    } else if (getIntent().hasExtra(ACTIVITY_ID)) {
+		// We received an ID of the activity to be displayed.
+		updateViewFromId(getIntent().getExtras().getInt(ACTIVITY_ID));
+	    } else {
+		// Simply display the most recent activity
+	    }
 	} else {
-	    // Simply display the most recent activity
-	} 
-	
-	updateViews();
+	    TimeTracker._assert(mId > 0, 
+				"mId is not initialized but bundle indicates "
+				+ "that screen has been set up.");
+	}
+	return;
+    }
+    
+    /**
+     * Make the view for a new TextView, implementing the {@link
+     * ViewSwitcher.ViewFactory} interface.
+     */
+    public View makeView() {
+        TextView t = new TextView(this);
+        t.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL);
+        t.setTextSize(20);
+        t.setTextColor(Color.BLUE);
+        return t;
+    }
+    
+    private void createNewActivity(Intent intent) {
+	// In the case that there is a currently active activity,
+	// we should end it.
+	Cursor curActivity = this.getContentResolver().query(ActivityColumns.CONTENT_URI,
+							     new String[]{ActivityColumns._ID},
+							     ActivityColumns.ACTIVITY_END_TIME + " IS NULL",
+							     null,
+							     null); // Default sort order
+	    
+	if (curActivity.getCount() < 1) {
+	    // Nothing to be done..
+	} else if (curActivity.getCount() == 1) {
+	    // Close the current activity and set the ending time
+	    // to the current time.
+	    curActivity.moveToFirst();
+	    ContentValues updateValues = new ContentValues();
+	    updateValues.put(ActivityColumns.ACTIVITY_END_TIME, (new DateTime()).toString());
+	    this.getContentResolver().update(ActivityColumns.CONTENT_URI,
+					     updateValues,
+					     ActivityColumns._ID + "= ?",
+					     new String[]{Integer.toString(curActivity.getInt(0))});
+	} else {
+	    // Error! The database is an unsound state, and should
+	    // be triggered appropriately.
+	    TimeTracker._assert(false,"Database has two active activities at once");
+	}
+	    
+	curActivity.close();
+	    
+	// We should create a new activity.  We first need to make
+	// sure that we stop tracking the current event.
+	DateTime currentTime = new DateTime();
+	ContentValues newActivity = new ContentValues();
+	mActivityName = "New Activity";
+	mStartTime = currentTime;
+	mEndTime = null;
+	mTags = "";
+	    
+	// Don't put anything for end time, it's simply null,
+	// indicating that the end of the activity has been
+	// reached.
+	newActivity.put(ActivityColumns.ACTIVITY_NAME, mActivityName);
+	newActivity.put(ActivityColumns.ACTIVITY_START_TIME, mStartTime.toString());
+	newActivity.put(ActivityColumns.ACTIVITY_TAGS, mTags);
+	    
+	// Insert values for the most recent activity.
+	mId = Integer.parseInt(getContentResolver().
+			       insert(ActivityColumns.CONTENT_URI,newActivity).
+			       getLastPathSegment());
+	return;
     }
     
     /**
@@ -114,8 +188,59 @@ public class ViewActivity extends Activity implements View.OnClickListener
     private void updateViews() {
 	mNameEdit.setText(mActivityName);
 	mActivityNameText.setText(mActivityName);
-	// Do tags
-	mTagsEdit.setText(mTags);
+	updateTags();
+	updateDuration();
+    }
+    
+    /**
+     * Update the tags view of the activity, using the designated tags
+     * layout.
+     */
+    private void updateTags() {
+	mTagsBox.removeAllViews();
+	String[] tags = mTags.split(TimeTracker.TAG_SEPARATOR);
+	
+	for (int i = 0; i < tags.length; i++) {
+	    TextView newTag = new TextView(this);
+	    newTag.setBackgroundResource(R.layout.tag_background);
+	    newTag.setText(tags[i]);
+	    LinearLayout.LayoutParams margins = 
+		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, 
+					  LayoutParams.WRAP_CONTENT);
+	    margins.setMargins(10,10,10,10);
+	    mTagsBox.addView(newTag);
+	}
+	
+	return;
+    }
+    
+    /**
+     * Check whether or not this is the user's current activity.
+     * 
+     * @return true iff this activity is the user's current activity.
+     */
+    private boolean isCurrentActivity() {
+	return mEndTime == null;
+    }
+    
+    /**
+     * Get the duration of the currently lasting activity. 
+     */
+    private Period getCurrentDuration() {
+	if (isCurrentActivity()) {
+	    return (new Interval(mStartTime, new DateTime())).toPeriod();
+	} else {
+	    return  (new Interval(mStartTime, mEndTime)).toPeriod();
+	}
+    }
+    
+    /**
+     * Update the duration inforamtion on the screen.
+     */
+    private void updateDuration() {
+	mActivityDurationText.
+	    setText(TimeTracker.convertDurationToString(this, getCurrentDuration()));
+	return;
     }
     
     /** 
@@ -143,27 +268,36 @@ public class ViewActivity extends Activity implements View.OnClickListener
 	} else {
 	    // Information received 
 	    activity.moveToFirst();
-	    mActivityName = activity.getString(activity.getColumnIndex(ActivityColumns.ACTIVITY_NAME));
+	    mActivityName = activity.getString(
+			      activity.getColumnIndex(
+				ActivityColumns.ACTIVITY_NAME));
+	    mStartTime = 
+		DateTime.parse(
+		  activity.getString(activity.getColumnIndex(
+				       ActivityColumns.ACTIVITY_START_TIME)));
+	    mEndTime = 
+		DateTime.parse(
+                  activity.getString(activity.getColumnIndex(
+				       ActivityColumns.ACTIVITY_END_TIME)));
+	    mTags = 
+		activity.getString(activity.getColumnIndex(ActivityColumns.ACTIVITY_TAGS));
+		  
 	    if (mActivityName == null) { 
-		Log.e(TAG, "null");
+		Log.e(TAG, "");
 	    } 
 	}
 	activity.close();
     }
     
-    /**
-     * Update the duration inforamtion on the screen 
-     */
-    private void updateDuration() {
-	
-    }
-    
+    // This uses a sort of arbitrary back off strategy
     private Runnable mDurationUpdateTask = new Runnable() { 
 	    public void run() {
-		// Update the duration to 
-		
-		// Run again in 10 seconds.
-		mDurationUpdateHandler.postDelayed(this, 1000 * 10);
+		updateDuration();
+		if (getCurrentDuration().getMinutes() < 1) {
+		    mDurationUpdateHandler.postDelayed(this, getCurrentDuration().getSeconds() * 500);
+		} else {
+		    mDurationUpdateHandler.postDelayed(this, 60 * 500);
+		}
 	    }
 	};
     
@@ -172,11 +306,17 @@ public class ViewActivity extends Activity implements View.OnClickListener
      */
     public void onResume() {
 	super.onResume();
-	mDurationUpdateHandler.removeCallbacks(mDurationUpdateTask);
+	// Start updating the duration of the activity if this is the
+	// current activity.
+	if (isCurrentActivity()) {
+	    mDurationUpdateHandler.postDelayed(mDurationUpdateTask, 1000);
+	}
     }
     
     /**
      * Handle the switch or stop click.
+     *
+     * @param v The View that was clicked.
      */
     public void onClick(View v) {
 	switch(v.getId()) {
@@ -191,8 +331,7 @@ public class ViewActivity extends Activity implements View.OnClickListener
 	    // Update current information to stop tracking
 	    mActivityName = mNameEdit.getText().toString();
 	    mTags = mTagsEdit.getText().toString();
-	    long currentTime = Calendar.getInstance().getTime().getTime();
-	    mEndTime = currentTime;
+	    mEndTime = new DateTime();
 	    updateEntryInDatabase();
 	    updateViews();
 	    break;

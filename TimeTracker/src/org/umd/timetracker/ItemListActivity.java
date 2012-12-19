@@ -1,8 +1,7 @@
-package org.umd.timetracker;
+ package org.umd.timetracker;
 
 import android.view.MenuItem;
 import android.content.Intent;
-
 import android.app.Activity;
 import android.app.ListActivity;
 import android.app.LoaderManager;
@@ -47,26 +46,6 @@ public class ItemListActivity extends ListActivity
 	getLoaderManager().initLoader(0, null, this);
     }
     
-    /**
-     * TODO: REMOVE ME
-     *
-     * This is just for the project sample to demonstrate mobile
-     * intents.
-     */
-    private void registerMobileIntents() {
-	Intent emailIntent = new Intent();
-	emailIntent.setComponent(EmailReceiver.class);
-	PendingIntent emailBroadcast = getBroadcast(this, 0, emailIntent, 0);
-	Constraint sendAction = 
-	    new PredicateConstraint("action", new AtomConstraint("send"));
-	Constraint messageType = 
-	    new PredicateConstraint("mimetype", new VariableConstraint("x"));
-	ConstraintSet constraints = 
-	    new ConstraintSet(new Constraint[] { sendAction, messageType});
-	mIntentHelper.registerIntent(constraints, emailBroadcast);
-	return;
-    }
-
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
 	// app icon in action bar clicked; go home

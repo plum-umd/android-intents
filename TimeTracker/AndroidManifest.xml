@@ -11,6 +11,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+	android:name=".TimeTrackerApplication"
         android:theme="@style/AppTheme" >
         <activity
             android:name="ViewActivity"
@@ -34,4 +35,6 @@
             android:label="@string/backup_activity">
         </activity>
     </application>
+    <uses-permission android:name="android.permission.INTERNET">
+    </uses-permission>
 </manifest>
