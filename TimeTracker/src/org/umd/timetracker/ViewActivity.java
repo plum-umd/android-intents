@@ -1,5 +1,8 @@
 package org.umd.timetracker;
 
+
+
+
 import org.umd.timetracker.TimeTracker.ActivityColumns;
 
 import org.joda.time.DateTime;
@@ -12,6 +15,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +29,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -54,7 +59,10 @@ public class ViewActivity extends Activity
     private LinearLayout mTagsBox;
     private EditText mTagsEdit;
     private EditText mNameEdit;
+    private EditText mCategoryEdit;
     private TextView mActivityNameText;
+    private TextView mTagsDescText;
+    private TextView mCategoryText;
     private TextSwitcher mActivityDurationText;
     
     private static final String TAG = "org.umd.timetracker.ViewActivity";
@@ -84,9 +92,11 @@ public class ViewActivity extends Activity
 	
 	mTagsEdit = (EditText)findViewById(R.id.tags_input);
 	mNameEdit = (EditText)findViewById(R.id.activity_input);
+	mCategoryEdit = (EditText)findViewById(R.id.category_input);
 	mActivityNameText = (TextView)findViewById(R.id.current_activity_name);
+	mTagsDescText = (TextView)findViewById(R.id.current_activity_tag_list);
+	mCategoryText = (TextView)findViewById(R.id.current_category_name);
 	mTagsBox = (LinearLayout)findViewById(R.id.tag_set);
-	mTagsBox.setPadding(20,20,20,20);
 	mActivityDurationText = (TextSwitcher)findViewById(R.id.current_activity_duration);
 	((Button)findViewById(R.id.switch_activity_button)).setOnClickListener(this);
 	((Button)findViewById(R.id.stop_activity_button)).setOnClickListener(this);
@@ -124,7 +134,8 @@ public class ViewActivity extends Activity
     public View makeView() {
         TextView t = new TextView(this);
         t.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL);
-        t.setTextSize(20);
+        t.setTextSize(30);
+	t.setTypeface(Typeface.DEFAULT_BOLD);
         t.setTextColor(Color.BLUE);
         return t;
     }
@@ -186,8 +197,16 @@ public class ViewActivity extends Activity
      * information in the different private fields.
      */
     private void updateViews() {
-	mNameEdit.setText(mActivityName);
-	mActivityNameText.setText(mActivityName);
+	TimeTracker._assert(mActivityName != null, "null activity name");
+	String[] act = mActivityName.split(TimeTracker.CATEGORY_SEPARATOR);
+	mNameEdit.setText(act[0]);
+	mActivityNameText.setText(act[0]);
+	if (act.length > 1) {
+	    // Simply use the first separator as the category
+	    // separator.
+	    mCategoryEdit.setText(act[1]);
+	    mCategoryText.setText(act[1]);
+	}
 	updateTags();
 	updateDuration();
     }
@@ -200,14 +219,23 @@ public class ViewActivity extends Activity
 	mTagsBox.removeAllViews();
 	String[] tags = mTags.split(TimeTracker.TAG_SEPARATOR);
 	
+	if (tags.length == 0) {
+	    mTagsDescText.setText("No tags");
+	} else {
+	    mTagsDescText.setText("");
+	}
+	
 	for (int i = 0; i < tags.length; i++) {
 	    TextView newTag = new TextView(this);
 	    newTag.setBackgroundResource(R.layout.tag_background);
 	    newTag.setText(tags[i]);
 	    LinearLayout.LayoutParams margins = 
-		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, 
-					  LayoutParams.WRAP_CONTENT);
-	    margins.setMargins(10,10,10,10);
+		new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, 
+					      LayoutParams.WRAP_CONTENT);
+	    margins.setMargins(10,8,10,0);
+	    newTag.setLayoutParams(margins);
+	    newTag.setPadding(4,4,4,4);
+	    newTag.setTypeface(Typeface.DEFAULT_BOLD);
 	    mTagsBox.addView(newTag);
 	}
 	
@@ -323,6 +351,16 @@ public class ViewActivity extends Activity
 	case R.id.switch_activity_button:
 	    // Update the current information
 	    mActivityName = mNameEdit.getText().toString();
+	    if (mActivityName.split(TimeTracker.CATEGORY_SEPARATOR).length > 1) {
+		// The user specified their category in the string...
+		// do nothing
+	    } else {
+		// Else form the name from appending the string with
+		// the category
+		mActivityName += 
+		    TimeTracker.CATEGORY_SEPARATOR + 
+		    mCategoryEdit.getText().toString();
+	    }
 	    mTags = mTagsEdit.getText().toString();
 	    updateEntryInDatabase();
 	    updateViews();

@@ -14,8 +14,7 @@
       android:layout_height="wrap_content"
       android:layout_alignParentLeft="true"
       android:layout_alignParentRight="true" >
-    <TableRow
-	android:gravity="center">
+    <TableRow android:gravity="center">
       <TextView
 	  android:id="@+id/current_activity_name"
 	  android:layout_width="wrap_content"
@@ -23,7 +22,24 @@
 	  android:layout_alignParentLeft="true"
 	  android:layout_alignParentTop="true"
 	  android:text="Current activity"
-	  android:gravity="center"	  
+	  android:ellipsize="marquee"
+	  android:maxLines="1"
+	  android:scrollHorizontally="true"
+	  android:singleLine="true"
+	  android:gravity="center_horizontal"
+	  android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
+    <TableRow
+	android:gravity="center">
+      <TextView
+	  android:id="@+id/current_category_name"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_alignParentLeft="true"
+	  android:layout_alignParentTop="true"
+	  android:textStyle="bold"
+	  android:text="Category"
+	  android:gravity="center_horizontal"
 	  android:textAppearance="?android:attr/textAppearanceLarge" />
     </TableRow>
     <TableRow>
@@ -52,7 +68,8 @@
 	    android:orientation="horizontal"/>
       </LinearLayout>
     </TableRow>
-    <TableRow>
+    <TableRow
+	android:gravity="center">
       <TextSwitcher
 	  android:id="@+id/current_activity_duration"
 	  android:layout_width="wrap_content"
@@ -60,8 +77,56 @@
 	  android:layout_alignParentLeft="true"
 	  android:layout_alignParentTop="true"
 	  android:text="Activity duration"
-	  android:gravity="center"
+	  android:gravity="center_horizontal"
 	  android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
+  </TableLayout>
+
+  <!-- Start and end points in time -->
+  
+  <TableLayout
+      android:id="@+id/start_end_table"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/current_activity_display"
+      android:layout_alignParentLeft="true"
+      android:stretchColumns="2"
+      android:layout_alignParentRight="true" >
+    <TableRow
+	android:id="@+id/start_time_row"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+      <TextView
+	  android:id="@+id/start_time_desc"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/activity_desc"
+	  android:textAppearance="?android:attr/textAppearanceMedium" />
+      <TextView
+	  android:id="@+id/start_time_text"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/activity_desc"
+	  android:gravity="right"
+	  android:textAppearance="?android:attr/textAppearanceMedium" />
+    </TableRow>
+    <TableRow
+	android:id="@+id/end_time_row"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+      <TextView
+	  android:id="@+id/end_time_desc"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/activity_desc"
+	  android:textAppearance="?android:attr/textAppearanceMedium" />
+      <TextView
+	  android:id="@+id/end_time_text"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/activity_desc"
+	  android:gravity="right"
+	  android:textAppearance="?android:attr/textAppearanceMedium" />
     </TableRow>
   </TableLayout>
   
@@ -85,6 +150,23 @@
 	  android:textAppearance="?android:attr/textAppearanceMedium" />
       <EditText
 	  android:id="@+id/activity_input"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_weight="1"
+	  android:ems="10" />
+    </TableRow>
+    <TableRow
+	android:id="@+id/category_entry_row"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content" >
+      <TextView
+	  android:id="@+id/category_desc"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:text="@string/category_desc"
+	  android:textAppearance="?android:attr/textAppearanceMedium" />
+      <EditText
+	  android:id="@+id/category_input"
 	  android:layout_width="wrap_content"
 	  android:layout_height="wrap_content"
 	  android:layout_weight="1"

@@ -46,7 +46,8 @@ public class TimeTracker
     public static final String SHARED_PREFS_FILE = "prefs";
     
     public static final String TAG_SEPARATOR = ",";
-
+    public static final String CATEGORY_SEPARATOR = "@";
+    
     /**
      * Get the shared preferences file used to store the preferences
      * used in the app.
