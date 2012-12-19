@@ -1,6 +1,7 @@
 package org.umd.timetracker;
 
 import org.joda.time.Period;
+import org.joda.time.DateTime;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -78,6 +79,20 @@ public class TimeTracker
 	} else {
 	    return p.getSeconds() + " seconds";
 	}
+    }
+    
+    /**
+     * Take a {@link DateTime} to a String that can be displayed in
+     * the app, according to the user's preferences.
+     * 
+     * @param time The time to convert to a string.
+     */
+    public static String convertTimeToString(SharedPreferences prefs, DateTime time) {
+	return time.toString();
+    }
+    
+    public static String convertTimeToString(Context ctxt, DateTime time) {
+	return convertTimeToString(getSharedPreferences(ctxt), time);
     }
     
     /**

@@ -1,5 +1,11 @@
  package org.umd.timetracker;
 
+import android.util.Log;
+
+import org.umd.timetracker.TimeTracker.ActivityColumns.*;
+import org.umd.timetracker.TimeTracker.*;
+import org.joda.time.DateTime;
+
 import android.view.MenuItem;
 import android.content.Intent;
 import android.app.Activity;
@@ -13,6 +19,7 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.view.View;
 
 /**
@@ -22,8 +29,9 @@ import android.view.View;
  * @author micinski
  */
 public class ItemListActivity extends ListActivity 
-  implements LoaderManager.LoaderCallbacks<Cursor> {
-    
+    implements LoaderManager.LoaderCallbacks<Cursor>,
+	       SimpleCursorAdapter.ViewBinder
+{
     // Adapter to hold list data.
     private SimpleCursorAdapter mAdapter;
     
@@ -39,11 +47,71 @@ public class ItemListActivity extends ListActivity
 	super.onCreate(savedInstanceState);
 	
 	mAdapter = new SimpleCursorAdapter(this,
-					   android.R.layout.simple_list_item_1, null,
-					   new String[] { TimeTracker.ActivityColumns.ACTIVITY_NAME },
-					   new int[] { android.R.id.text1 }, 0);
+					   R.layout.activity_list_item,null
+					   ,ACTIVITIES_PROJECTION
+					   ,new int[] { R.id.list_activity_name,
+							R.id.list_activity_category,
+							R.id.list_activity_time,
+							R.id.list_activity_time }
+					   ,0);
+	
+	// Set the view binder to fill in the fields of the list
+	mAdapter.setViewBinder(this);
 	setListAdapter(mAdapter);
 	getLoaderManager().initLoader(0, null, this);
+    }
+    
+    /**
+     * Draw the activity, category, and duration as appropriate for
+     * the adapter on {@link SimpleCursorAdapter}.
+     * 
+     * @param view The view to fill in.
+     * @param cursor The cursor with the appropriate row.
+     * @param columnInde The column which should be filled in.
+     */
+    public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+	Log.e("ItemListActivity", "here!!!");
+	switch (columnIndex) {
+	case 0:
+	    {
+		// The activity name
+		String activityName[] = 
+		    cursor.getString(cursor.getColumnIndex(ActivityColumns.ACTIVITY_NAME)).
+		    split(TimeTracker.CATEGORY_SEPARATOR);
+		((TextView)view).setText(activityName[0]);
+		break;
+	    }
+	case 1:
+	    {
+		String activityName[] = 
+		    cursor.getString(cursor.getColumnIndex(ActivityColumns.ACTIVITY_NAME)).
+		    split(TimeTracker.CATEGORY_SEPARATOR);
+		if (activityName.length > 1) {
+		    ((TextView)view).setText(activityName[1]);
+		}
+		break;
+	    }
+	case 2:
+	    {
+		DateTime startTimeDt = 
+		    DateTime.parse(cursor.
+				   getString(cursor.getColumnIndex(ActivityColumns.ACTIVITY_START_TIME)));
+		String startTime = TimeTracker.convertTimeToString(this, startTimeDt);
+		String endTime = 
+		    cursor.getString(cursor.getColumnIndex(ActivityColumns.ACTIVITY_END_TIME));
+		String timeValue = null;
+		if (endTime == null) {
+		    timeValue = startTime + " - now";
+		} else {
+		    timeValue = startTime + " - " 
+			+ TimeTracker.convertTimeToString(this,DateTime.parse(endTime));
+		}
+		((TextView)view).setText(timeValue);
+	    }
+	default:
+	    break;
+	}
+	return true;
     }
     
     @Override
@@ -82,7 +150,7 @@ public class ItemListActivity extends ListActivity
     public void onLoaderReset(Loader<Cursor> loader) {
 	mAdapter.swapCursor(null);
     }
-    
+ 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 	// Inflate the menu; this adds items to the action bar if it
@@ -90,7 +158,7 @@ public class ItemListActivity extends ListActivity
 	getMenuInflater().inflate(R.menu.items_activity, menu);
 	return true;
     }
-    
+            
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 	switch (item.getItemId()) {

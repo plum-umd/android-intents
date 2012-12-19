@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    <TextView
+        android:id="@+id/list_activity_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <TextView
+        android:id="@+id/list_activity_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="30dp"
+        android:paddingTop="4dp"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:typeface="normal" />
+    <TextView
+	android:id="@+id/list_activity_time"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="Small Text"
+	android:layout_gravity="center_vertical|right"
+	android:gravity="right"
+	android:paddingRight="10dp"
+	android:textAppearance="?android:attr/textAppearanceSmall" />
+</LinearLayout>
